@@ -290,17 +290,25 @@ tr:nth-child(even) td { background: #fafbff; }
 .tree-block {
   background: var(--code-bg);
   border-radius: var(--radius);
-  padding: 20px 24px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.84rem;
-  line-height: 1.7;
   overflow-x: auto;
   margin: 16px 0;
 }
-.t-dir  { color: #67e8f9; }
+.tree-block pre {
+  margin: 0;
+  padding: 20px 24px;
+  background: transparent;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.84rem;
+  line-height: 1.85;
+  border-radius: 0;
+  white-space: pre;
+  tab-size: 4;
+}
+.t-dir  { color: #67e8f9; font-weight: 600; }
 .t-file { color: #e2e8f0; }
 .t-ann  { color: #64748b; font-style: italic; }
-.t-key  { color: #fbbf24; }
+.t-key  { color: #fbbf24; font-weight: 600; }
+.t-pipe { color: #334155; user-select: none; }   /* ├── │ └── */
 
 /* ── Before/After ────────────────────────────────────────── */
 .compare-grid {
@@ -719,19 +727,19 @@ tr:nth-child(even) td { background: #fafbff; }
 </div>
 
 <h3>2.2 Recommended enterprise decomposition</h3>
-<div class="tree-block">
+<div class="tree-block"><pre>
 <span class="t-dir">enterprise-monorepo/</span>
-├── <span class="t-key">MODULE.bazel</span>        <span class="t-ann">— declares the module name and all external deps (Bzlmod)</span>
-├── <span class="t-key">.bazelversion</span>       <span class="t-ann">— pins Bazel version, e.g. "9.1.0"</span>
-├── <span class="t-key">.bazelrc</span>            <span class="t-ann">— shared build flags for all developers and CI</span>
-├── <span class="t-dir">apps/</span>               <span class="t-ann">— deployable services, CLIs, daemons</span>
-├── <span class="t-dir">libs/</span>               <span class="t-ann">— shared C++ libraries used by multiple apps</span>
-├── <span class="t-dir">platforms/</span>          <span class="t-ann">— cross-compilation platform definitions</span>
-├── <span class="t-dir">tools/</span>              <span class="t-ann">— Starlark macros, code generators, formatters</span>
-├── <span class="t-dir">third_party/</span>        <span class="t-ann">— vendored or mirrored external dependencies</span>
-├── <span class="t-dir">docs/</span>               <span class="t-ann">— architecture decisions, migration notes</span>
-└── <span class="t-dir">ci/</span>                 <span class="t-ann">— CI pipeline scripts and configurations</span>
-</div>
+<span class="t-pipe">├──</span> <span class="t-key">MODULE.bazel</span>        <span class="t-ann">— declares the module name and all external deps (Bzlmod)</span>
+<span class="t-pipe">├──</span> <span class="t-key">.bazelversion</span>       <span class="t-ann">— pins Bazel version, e.g. "9.1.0"</span>
+<span class="t-pipe">├──</span> <span class="t-key">.bazelrc</span>            <span class="t-ann">— shared build flags for all developers and CI</span>
+<span class="t-pipe">├──</span> <span class="t-dir">apps/</span>               <span class="t-ann">— deployable services, CLIs, daemons</span>
+<span class="t-pipe">├──</span> <span class="t-dir">libs/</span>               <span class="t-ann">— shared C++ libraries used by multiple apps</span>
+<span class="t-pipe">├──</span> <span class="t-dir">platforms/</span>          <span class="t-ann">— cross-compilation platform definitions</span>
+<span class="t-pipe">├──</span> <span class="t-dir">tools/</span>              <span class="t-ann">— Starlark macros, code generators, formatters</span>
+<span class="t-pipe">├──</span> <span class="t-dir">third_party/</span>        <span class="t-ann">— vendored or mirrored external dependencies</span>
+<span class="t-pipe">├──</span> <span class="t-dir">docs/</span>               <span class="t-ann">— architecture decisions, migration notes</span>
+<span class="t-pipe">└──</span> <span class="t-dir">ci/</span>                 <span class="t-ann">— CI pipeline scripts and configurations</span>
+</pre></div>
 
 <div class="box warn">
   <div class="box-title">⚠️ Rule: libs/ is not a dumping ground</div>
@@ -746,27 +754,27 @@ tr:nth-child(even) td { background: #fafbff; }
 <p>For large organizations, directory structure should quickly answer four questions about any file: <em>Who owns this code? What can depend on it? How is it tested? Can it change without rebuilding everything?</em></p>
 
 <h3>3.1 Annotated structure for C++ services</h3>
-<div class="tree-block">
+<div class="tree-block"><pre>
 <span class="t-dir">enterprise-monorepo/</span>
-├── <span class="t-dir">apps/</span>
-│   ├── <span class="t-dir">order_service/</span>
-│   │   ├── <span class="t-key">BUILD.bazel</span>      <span class="t-ann">— defines cc_binary for the service executable</span>
-│   │   └── <span class="t-file">main.cc</span>          <span class="t-ann">— entry point; #include from libs/ only</span>
-│   └── <span class="t-dir">billing_service/</span>
-│       ├── <span class="t-key">BUILD.bazel</span>
-│       └── <span class="t-file">main.cc</span>
-├── <span class="t-dir">libs/</span>
-│   ├── <span class="t-dir">common/</span>            <span class="t-ann">— foundation types used by everyone (Status, Error, etc.)</span>
-│   │   ├── <span class="t-key">BUILD.bazel</span>      <span class="t-ann">— typically visibility: public (it's truly foundational)</span>
-│   │   └── <span class="t-file">status.h</span>         <span class="t-ann">— header-only; no .cc needed</span>
-│   └── <span class="t-dir">pricing/</span>           <span class="t-ann">— business logic for price calculations</span>
-│       ├── <span class="t-key">BUILD.bazel</span>      <span class="t-ann">— visibility restricted to approved consumers</span>
-│       ├── <span class="t-file">price_calculator.h</span>
-│       ├── <span class="t-file">price_calculator.cc</span>
-│       └── <span class="t-file">price_calculator_test.cc</span>
-└── <span class="t-dir">tools/</span>
-    └── <span class="t-dir">build_defs/</span>        <span class="t-ann">— shared .bzl macros to keep BUILD files DRY</span>
-</div>
+<span class="t-pipe">├──</span> <span class="t-dir">apps/</span>
+<span class="t-pipe">│   ├──</span> <span class="t-dir">order_service/</span>
+<span class="t-pipe">│   │   ├──</span> <span class="t-key">BUILD.bazel</span>               <span class="t-ann">— defines cc_binary for the service executable</span>
+<span class="t-pipe">│   │   └──</span> <span class="t-file">main.cc</span>                   <span class="t-ann">— entry point; #include from libs/ only</span>
+<span class="t-pipe">│   └──</span> <span class="t-dir">billing_service/</span>
+<span class="t-pipe">│       ├──</span> <span class="t-key">BUILD.bazel</span>               <span class="t-ann">— same pattern as order_service</span>
+<span class="t-pipe">│       └──</span> <span class="t-file">main.cc</span>
+<span class="t-pipe">├──</span> <span class="t-dir">libs/</span>
+<span class="t-pipe">│   ├──</span> <span class="t-dir">common/</span>                       <span class="t-ann">— foundation types used by everyone</span>
+<span class="t-pipe">│   │   ├──</span> <span class="t-key">BUILD.bazel</span>               <span class="t-ann">— visibility: public (truly foundational)</span>
+<span class="t-pipe">│   │   └──</span> <span class="t-file">status.h</span>                  <span class="t-ann">— header-only; no .cc file needed</span>
+<span class="t-pipe">│   └──</span> <span class="t-dir">pricing/</span>                      <span class="t-ann">— business logic for price calculations</span>
+<span class="t-pipe">│       ├──</span> <span class="t-key">BUILD.bazel</span>               <span class="t-ann">— visibility restricted to approved consumers</span>
+<span class="t-pipe">│       ├──</span> <span class="t-file">price_calculator.h</span>        <span class="t-ann">— public API header</span>
+<span class="t-pipe">│       ├──</span> <span class="t-file">price_calculator.cc</span>       <span class="t-ann">— implementation (private detail)</span>
+<span class="t-pipe">│       └──</span> <span class="t-file">price_calculator_test.cc</span>  <span class="t-ann">— unit tests</span>
+<span class="t-pipe">└──</span> <span class="t-dir">tools/</span>
+    <span class="t-pipe">└──</span> <span class="t-dir">build_defs/</span>                   <span class="t-ann">— shared .bzl macros to keep BUILD files DRY</span>
+</pre></div>
 
 <h3>3.2 Naming conventions</h3>
 <div class="table-wrap">
